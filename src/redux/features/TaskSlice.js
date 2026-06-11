@@ -24,6 +24,9 @@ const taskSlice = createSlice({
 
     reorderTasks(state, action) {
       state.tasks = action.payload;
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem("tasks", JSON.stringify(action.payload));
+      }
     },
   },
 

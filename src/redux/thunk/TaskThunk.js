@@ -2,6 +2,26 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../api/axiosInstance";
 import dummyTasks from "../../data/tasks.json";
 
+const loadTasks = () => {
+  if (typeof window !== "undefined" && window.localStorage) {
+    const data = localStorage.getItem("tasks");
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        // Fallback
+      }
+    }
+  }
+  return dummyTasks;
+};
+
+const saveTasks = (tasks) => {
+  if (typeof window !== "undefined" && window.localStorage) {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }
+};
+
 // ─── GET /tasks ───────────────────────────────────────────────────────────────
 export const getTasks = createAsyncThunk(
   "tasks/getTasks",
@@ -12,7 +32,7 @@ export const getTasks = createAsyncThunk(
     } catch (error) {
       // API not available — returning dummy data
     }
-    return dummyTasks;
+    return loadTasks();
   },
 );
 
@@ -26,7 +46,11 @@ export const createTask = createAsyncThunk(
     } catch (error) {
       // API not available — returning submitted data
     }
-    return { ...taskData, id: Date.now() };
+    const tasks = loadTasks();
+    const newTask = { ...taskData, id: taskData.id || Date.now() };
+    tasks.push(newTask);
+    saveTasks(tasks);
+    return newTask;
   },
 );
 
@@ -40,7 +64,11 @@ export const updateTask = createAsyncThunk(
     } catch (error) {
       // API not available — returning updated data
     }
-    return { id, ...taskData };
+    const tasks = loadTasks();
+    const updated = { ...taskData, id };
+    const newTasks = tasks.map((task) => (task.id === id ? updated : task));
+    saveTasks(newTasks);
+    return updated;
   },
 );
 
@@ -54,6 +82,9 @@ export const deleteTask = createAsyncThunk(
     } catch (error) {
       // API not available — returning id
     }
+    const tasks = loadTasks();
+    const newTasks = tasks.filter((task) => task.id !== id);
+    saveTasks(newTasks);
     return id;
   },
 );
