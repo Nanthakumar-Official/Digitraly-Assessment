@@ -7,7 +7,7 @@ export const getTasks = createAsyncThunk(
   "tasks/getTasks",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/tasks");
+      // const response = await axios.get("/tasks");
       //== return response.data;
     } catch (error) {
       // API not available — returning dummy data
@@ -21,7 +21,7 @@ export const createTask = createAsyncThunk(
   "tasks/createTask",
   async (taskData, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/tasks", taskData);
+      // const response = await axios.post("/tasks", taskData);
       // return response.data;
     } catch (error) {
       // API not available — returning submitted data
@@ -35,7 +35,7 @@ export const updateTask = createAsyncThunk(
   "tasks/updateTask",
   async ({ id, taskData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/tasks/${id}`, taskData);
+      // const response = await axios.put(`/tasks/${id}`, taskData);
       // return response.data;
     } catch (error) {
       // API not available — returning updated data
@@ -49,7 +49,7 @@ export const deleteTask = createAsyncThunk(
   "tasks/deleteTask",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/tasks/${id}`);
+      // const response = await axios.delete(`/tasks/${id}`);
       // return response.data;
     } catch (error) {
       // API not available — returning id
