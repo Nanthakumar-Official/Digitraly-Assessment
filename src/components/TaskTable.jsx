@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import StatusBadge from "./StatusBadge";
 
@@ -9,7 +10,11 @@ import StatusBadge from "./StatusBadge";
  *  - headers  : array of { key, label } — drives column order dynamically
  *  - onEdit   : (id) => void
  *  - onDelete : (id) => void
- *  - onDragEnd: (result) => void — receives react-beautiful-dnd result
+ *  - onDragEnd: (result) => void — receives @hello-pangea/dnd result
+ *
+ * Layout:
+ *  - Mobile  (<768px): draggable card stack
+ *  - Desktop (≥768px): drag-and-drop table
  */
 
 const DEFAULT_HEADERS = [
@@ -27,68 +32,136 @@ const TaskTable = ({
   onDelete,
   onDragEnd,
 }) => {
-  const renderCell = (task, key) => {
-    switch (key) {
-      case "status":
-        return <StatusBadge status={task.status} />;
+  // ── Detect mobile (JS-driven, no CSS hide/show conflicts with DnD) ──────────
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
-      case "actions":
-        return (
-          <div className="flex gap-2 justify-center">
-            <button
-              onClick={() => onEdit && onEdit(task.id)}
-              className="bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600 transition-colors"
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // ── Empty state ─────────────────────────────────────────────────────────────
+  if (tasks.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
+        <span className="text-4xl">📋</span>
+        <p className="text-sm">No tasks found.</p>
+      </div>
+    );
+  }
+
+  // ── Mobile: Draggable Cards ─────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="mobile-cards">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex flex-col gap-3"
             >
-              Edit
-            </button>
-            <button
-              onClick={() => onDelete && onDelete(task.id)}
-              className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
-        );
+              {tasks.map((task, index) => (
+                <Draggable
+                  key={String(task.id)}
+                  draggableId={String(task.id)}
+                  index={index}
+                >
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className={`bg-white border rounded-xl shadow-sm transition-all ${
+                        snapshot.isDragging
+                          ? "shadow-lg border-blue-300 rotate-1 scale-[1.02]"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      {/* Card top: drag handle + title + status */}
+                      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+                        {/* Drag handle */}
+                        <span
+                          {...provided.dragHandleProps}
+                          className="text-gray-300 text-xl cursor-grab active:cursor-grabbing select-none flex-shrink-0"
+                          title="Drag to reorder"
+                        >
+                          ⠿
+                        </span>
 
-      default:
-        return task[key] ?? "—";
-    }
-  };
+                        <h3 className="flex-1 text-sm font-semibold text-gray-800 leading-snug">
+                          {task.title}
+                        </h3>
 
+                        <StatusBadge status={task.status} />
+                      </div>
+
+                      {/* Description */}
+                      <p className="px-4 py-1 text-xs text-gray-500 leading-relaxed">
+                        {task.description}
+                      </p>
+
+                      {/* Footer: due date + actions */}
+                      <div className="flex items-center justify-between px-4 pb-4 pt-2 border-t border-gray-100 mt-2">
+                        <span className="text-xs text-gray-400">
+                          📅{" "}
+                          <span className="text-gray-600 font-medium">
+                            {task.dueDate}
+                          </span>
+                        </span>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => onEdit && onEdit(task.id)}
+                            className="bg-indigo-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-600 active:scale-95 transition-all"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => onDelete && onDelete(task.id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-600 active:scale-95 transition-all"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    );
+  }
+
+  // ── Desktop: Drag-and-drop Table ────────────────────────────────────────────
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <table className="w-full border-collapse border border-gray-300">
-        <thead className="bg-gray-100">
-          <tr>
-            {/* Drag handle header */}
-            <th className="p-3 border border-gray-300 w-10 text-gray-400 text-sm select-none">
-              ⠿
-            </th>
-            {headers.map((h) => (
-              <th
-                key={h.key}
-                className="p-3 border border-gray-300 text-left text-sm font-semibold text-gray-700"
-              >
-                {h.label}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="p-3 border border-gray-200 w-10 text-gray-400 text-sm select-none">
+                ⠿
               </th>
-            ))}
-          </tr>
-        </thead>
+              {headers.map((h) => (
+                <th
+                  key={h.key}
+                  className="p-3 border border-gray-200 text-left text-sm font-semibold text-gray-700"
+                >
+                  {h.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-        <Droppable droppableId="task-table">
-          {(provided) => (
-            <tbody ref={provided.innerRef} {...provided.droppableProps}>
-              {tasks.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={headers.length + 1}
-                    className="text-center p-6 text-gray-500"
-                  >
-                    No tasks found.
-                  </td>
-                </tr>
-              ) : (
-                tasks.map((task, index) => (
+          <Droppable droppableId="desktop-table">
+            {(provided) => (
+              <tbody ref={provided.innerRef} {...provided.droppableProps}>
+                {tasks.map((task, index) => (
                   <Draggable
                     key={String(task.id)}
                     draggableId={String(task.id)}
@@ -104,10 +177,10 @@ const TaskTable = ({
                             : "hover:bg-gray-50"
                         }`}
                       >
-                        {/* Drag handle cell */}
+                        {/* Drag handle */}
                         <td
                           {...provided.dragHandleProps}
-                          className="p-3 border border-gray-300 text-center text-gray-400 cursor-grab active:cursor-grabbing select-none text-lg"
+                          className="p-3 border border-gray-200 text-center text-gray-400 cursor-grab active:cursor-grabbing select-none text-lg"
                           title="Drag to reorder"
                         >
                           ⠿
@@ -116,21 +189,42 @@ const TaskTable = ({
                         {headers.map((h) => (
                           <td
                             key={h.key}
-                            className="p-3 border border-gray-300 text-sm text-gray-700"
+                            className="p-3 border border-gray-200 text-sm text-gray-700"
                           >
-                            {renderCell(task, h.key)}
+                            {h.key === "status" ? (
+                              <StatusBadge status={task.status} />
+                            ) : h.key === "actions" ? (
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={() => onEdit && onEdit(task.id)}
+                                  className="bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600 transition-colors"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    onDelete && onDelete(task.id)
+                                  }
+                                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            ) : (
+                              task[h.key] ?? "—"
+                            )}
                           </td>
                         ))}
                       </tr>
                     )}
                   </Draggable>
-                ))
-              )}
-              {provided.placeholder}
-            </tbody>
-          )}
-        </Droppable>
-      </table>
+                ))}
+                {provided.placeholder}
+              </tbody>
+            )}
+          </Droppable>
+        </table>
+      </div>
     </DragDropContext>
   );
 };

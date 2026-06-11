@@ -35,7 +35,30 @@ const CreateTask = () => {
 
   return (
     <div className="max-w-2xl mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Create New Task</h2>
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          type="button"
+          onClick={() => navigate("/tasks")}
+          className="text-gray-600 hover:text-gray-800 transition-colors focus:outline-none flex items-center justify-center"
+          title="Back to Task List"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+        </button>
+        <h2 className="text-2xl font-bold">Create New Task</h2>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Title */}
