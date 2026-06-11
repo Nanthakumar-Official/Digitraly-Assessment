@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "title": "React Assessment",
+    "description": "Complete task manager",
+    "status": "Pending",
+    "dueDate": "2026-06-15"
+  },
+  {
+    "id": 2,
+    "title": "Redux Setup",
+    "description": "Configure Redux Toolkit",
+    "status": "Completed",
+    "dueDate": "2026-06-20"
+  }
+]
