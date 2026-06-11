@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import TaskList from "./pages/TaskList";
 import CreateTask from "./pages/CreateTask";
@@ -8,7 +8,10 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<TaskList />} />
+        {/* Redirect root to /tasks as per spec */}
+        <Route path="/" element={<Navigate to="/tasks" replace />} />
+
+        <Route path="/tasks" element={<TaskList />} />
 
         <Route path="/tasks/new" element={<CreateTask />} />
 

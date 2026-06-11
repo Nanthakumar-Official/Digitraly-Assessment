@@ -2,15 +2,36 @@
   {
     "id": 1,
     "title": "React Assessment",
-    "description": "Complete task manager",
+    "description": "Complete the task management application with React and Redux",
     "status": "Pending",
     "dueDate": "2026-06-15"
   },
   {
     "id": 2,
     "title": "Redux Setup",
-    "description": "Configure Redux Toolkit",
+    "description": "Configure Redux Toolkit with async thunks and slices",
     "status": "Completed",
+    "dueDate": "2026-06-10"
+  },
+  {
+    "id": 3,
+    "title": "API Integration",
+    "description": "Connect frontend to mock JSON Server REST API",
+    "status": "Pending",
+    "dueDate": "2026-06-18"
+  },
+  {
+    "id": 4,
+    "title": "UI Styling with Tailwind",
+    "description": "Style all components using Tailwind CSS utility classes",
+    "status": "Completed",
+    "dueDate": "2026-06-12"
+  },
+  {
+    "id": 5,
+    "title": "Drag and Drop Reorder",
+    "description": "Implement drag-and-drop task reordering using @hello-pangea/dnd",
+    "status": "Pending",
     "dueDate": "2026-06-20"
   }
 ]

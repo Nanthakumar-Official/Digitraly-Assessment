@@ -30,7 +30,7 @@ const CreateTask = () => {
 
     dispatch(createTask(taskData));
 
-    navigate("/");
+    navigate("/tasks");
   };
 
   return (
